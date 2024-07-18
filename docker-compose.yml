@@ -1,0 +1,6 @@
+version: '3.5'
+
+include:
+  - traefik/docker-compose.yml
+  - dozzle/docker-compose.yml
+  - pihole/docker-compose.yml

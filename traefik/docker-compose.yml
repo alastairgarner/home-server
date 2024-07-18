@@ -1,0 +1,35 @@
+version: '3.5'
+
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:v3.0.0
+    restart: unless-stopped
+    environment:
+      CF_API_EMAIL: garneralastair@gmail.com
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+      CF_ZONE_API_TOKEN: ${CF_DNS_API_TOKEN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    labels:
+      - "traefik.http.routers.docker.tls.domains[0].main=${DOMAIN}"
+      - "traefik.http.routers.docker.tls.domains[0].sans=*.${DOMAIN}"
+      - "traefik.http.routers.docker.tls.domains[1].main=rpi.${DOMAIN}"
+      - "traefik.http.routers.docker.tls.domains[1].sans=*.rpi.${DOMAIN}"
+      - "traefik.http.routers.docker.tls=true"
+      - "traefik.http.routers.docker.tls.certresolver=myresolver"
+      - "traefik.http.routers.docker.entrypoints=websecure"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=myresolver"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+    volumes:
+      - "./traefik.yaml:/etc/traefik/traefik.yaml"
+      - "./traefik/data:/data"
+      - "./traefik/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock"
+      # - "./rules.yaml:/etc/traefik/rules.yaml"
