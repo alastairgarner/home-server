@@ -23,3 +23,4 @@ services:
     volumes:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'
+      - '${RAID_MOUNT}/backup:/etc/backup'

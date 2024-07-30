@@ -4,3 +4,5 @@ include:
   - traefik/docker-compose.yml
   - dozzle/docker-compose.yml
   - pihole/docker-compose.yml
+  - photoprism/docker-compose.yml
+  # - immich/docker-compose.yml
