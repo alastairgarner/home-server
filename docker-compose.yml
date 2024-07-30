@@ -6,3 +6,11 @@ include:
   - pihole/docker-compose.yml
   - photoprism/docker-compose.yml
   # - immich/docker-compose.yml
+
+volumes:
+  backups:
+    driver: local # Define the driver and options under the volume name
+    driver_opts:
+      type: none
+      device: '${RAID_MOUNT}/backup'
+      o: bind
