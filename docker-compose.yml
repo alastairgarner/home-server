@@ -3,7 +3,9 @@ include:
   - dozzle/docker-compose.yml
   - pihole/docker-compose.yml
   - photoprism/docker-compose.yml
-  - monitoring/docker-compose.yml
+  - syncthing/docker-compose.yml
+  # - monitoring/docker-compose.yml
+  # - ntfy/docker-compose.yml
   # - immich/docker-compose.yml
 
 volumes:

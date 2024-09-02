@@ -1,0 +1,23 @@
+services:
+  syncthing:
+    image: syncthing/syncthing
+    container_name: syncthing
+    hostname: rpi-nas
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ${RAID_MOUNT}/docker-volumes/syncthing:/var/syncthing
+    ports:
+      # - 8384:8384 # Web UI
+      - 22000:22000/tcp # TCP file transfers
+      - 22000:22000/udp # QUIC file transfers
+      - 21027:21027/udp # Receive local discovery broadcasts
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.syncthing.rule=Host(`sync.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.syncthing.tls=true"
+      - "traefik.http.routers.sync.tls.certresolver=myresolver"
+      - "traefik.http.routers.sync.entrypoints=websecure"
+      - "traefik.http.services.sync.loadbalancer.server.port=8384"
