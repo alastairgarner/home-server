@@ -32,6 +32,7 @@ restic --verbose backup \
 	/mnt/raid/docker-volumes/photoprism/originals \
 	/mnt/raid/docker-volumes/photoprism/storage \
 	/mnt/raid/docker-volumes/syncthing \
+	/mnt/raid/photos \
 	--exclude-file=/home/alastair/services/restic/backup-ignore.txt
 
 # restic backup will return a 0 if successful, or a 3 if it was successful but

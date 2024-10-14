@@ -76,7 +76,8 @@ services:
     working_dir: "/photoprism" # do not change or remove
     ## Storage Folders: "~" is a shortcut for your home directory, "." for the current directory
     volumes:
-      - "${RAID_MOUNT}/docker-volumes/photoprism/originals:/photoprism/originals"               # Original media files (DO NOT REMOVE)
+      # - "${RAID_MOUNT}/docker-volumes/photoprism/originals:/photoprism/originals"               # Original media files (DO NOT REMOVE)
+      - "${RAID_MOUNT}/photos:/photoprism/originals"               # Original media files (DO NOT REMOVE)
       # - "/example/family:/photoprism/originals/family" # *Additional* media folders can be mounted like this
       # - "~/Import:/photoprism/import"                  # *Optional* base folder from which files can be imported to originals
       - "${RAID_MOUNT}/docker-volumes/photoprism/storage:/photoprism/storage"                  # *Writable* storage folder for cache, database, and sidecar files (DO NOT REMOVE)
