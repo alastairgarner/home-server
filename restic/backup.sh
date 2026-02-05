@@ -12,7 +12,7 @@ get_latest_snapshot_diff() {
 	echo $PRINT
 }
 
-source ~/.zshrc
+source $ZDOTDIR/.zshrc
 
 echo "Creating service backups"
 
