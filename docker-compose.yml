@@ -4,9 +4,9 @@ include:
   - pihole/docker-compose.yml
   - photoprism/docker-compose.yml
   - syncthing/docker-compose.yml
+  - changedetection/docker-compose.yml
+  - happy-coder/docker-compose.yml
   # - monitoring/docker-compose.yml
-  # - ntfy/docker-compose.yml
-  # - immich/docker-compose.yml
 
 volumes:
   backups:

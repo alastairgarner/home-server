@@ -1,0 +1,95 @@
+# docker-compose.yml
+version: "3.8"
+
+services:
+  happy-server:
+    image: happy-server:latest
+    build:
+      dockerfile: Dockerfile.server
+      context: ./happy
+    command: >
+      sh -c "npx prisma migrate deploy --schema=/repo/packages/happy-server/prisma/schema.prisma && yarn --cwd packages/happy-server start"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/happy-server
+      - REDIS_URL=redis://redis:6379
+      - SEED=your-seed-for-token-generation
+      - PORT=3000
+      - HANDY_MASTER_SECRET=your-secret
+      - S3_HOST=minio
+      - S3_PORT=9000
+      - S3_USE_SSL="false"
+      - S3_ACCESS_KEY=minioadmin
+      - S3_SECRET_KEY=minioadmin
+      - S3_BUCKET=happy
+      - S3_PUBLIC_URL=http://minio:9000/happy
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.happy.rule=Host(`happy.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.happy.tls=true"
+      - "traefik.http.routers.happy.tls.certresolver=myresolver"
+      - "traefik.http.routers.happy.entrypoints=websecure"
+      - "traefik.http.services.happy.loadbalancer.server.port=3000"
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=happy-server
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - happy_minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+  redis_data:
+  happy_minio_data:
+

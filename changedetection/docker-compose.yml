@@ -1,0 +1,23 @@
+# https://github.com/dgtlmoon/changedetection.io/wiki/Running-changedetection.io-behind-a-reverse-proxy
+# https://docs.linuxserver.io/images/docker-changedetection.io/#environment-variables-from-files-docker-secrets
+services:
+  changedetection:
+    image: lscr.io/linuxserver/changedetection.io:latest
+    container_name: changedetection
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - USE_X_SETTINGS=1
+    volumes:
+      - ./config:/config
+    ports:
+      - 5000:5000
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.changedetection.rule=Host(`changedetection.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.changedetection.tls=true"
+      - "traefik.http.routers.changedetection.tls.certresolver=myresolver"
+      - "traefik.http.routers.changedetection.entrypoints=websecure"
+      - "traefik.http.services.changedetection.loadbalancer.server.port=5000"
