@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: traefik:v3.6.8
+    image: traefik:v3
     restart: unless-stopped
     environment:
       CF_API_EMAIL: garneralastair@gmail.com

@@ -2,7 +2,7 @@
 # https://docs.linuxserver.io/images/docker-changedetection.io/#environment-variables-from-files-docker-secrets
 services:
   changedetection:
-    image: lscr.io/linuxserver/changedetection.io:latest
+    image: lscr.io/linuxserver/changedetection.io:0.54.2
     container_name: changedetection
     environment:
       - PUID=1000
