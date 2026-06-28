@@ -7,10 +7,9 @@ services:
       - "8888:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dozzle.rule=Host(`logs.rpi.${DOMAIN}`)"
-      - "traefik.http.routers.dozzle.tls=true"
-      - "traefik.http.routers.dozzle.tls.certresolver=myresolver"
-      - "traefik.http.routers.dozzle.entrypoints=websecure"
-      - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

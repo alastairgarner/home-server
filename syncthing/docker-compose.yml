@@ -14,10 +14,9 @@ services:
       - 22000:22000/tcp # TCP file transfers
       - 22000:22000/udp # QUIC file transfers
       - 21027:21027/udp # Receive local discovery broadcasts
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.syncthing.rule=Host(`sync.rpi.${DOMAIN}`)"
-      - "traefik.http.routers.syncthing.tls=true"
-      - "traefik.http.routers.sync.tls.certresolver=myresolver"
-      - "traefik.http.routers.sync.entrypoints=websecure"
-      - "traefik.http.services.sync.loadbalancer.server.port=8384"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

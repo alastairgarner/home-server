@@ -1,5 +1,5 @@
 include:
-  - traefik/docker-compose.yml
+  - caddy/docker-compose.yml
   - dozzle/docker-compose.yml
   - pihole/docker-compose.yml
   - photoprism/docker-compose.yml

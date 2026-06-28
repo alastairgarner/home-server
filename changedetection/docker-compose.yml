@@ -14,10 +14,9 @@ services:
     ports:
       - 5000:5000
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.changedetection.rule=Host(`changedetection.rpi.${DOMAIN}`)"
-      - "traefik.http.routers.changedetection.tls=true"
-      - "traefik.http.routers.changedetection.tls.certresolver=myresolver"
-      - "traefik.http.routers.changedetection.entrypoints=websecure"
-      - "traefik.http.services.changedetection.loadbalancer.server.port=5000"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

@@ -1,0 +1,27 @@
+{
+	acme_dns cloudflare {env.CF_DNS_API_TOKEN}
+}
+
+pihole.rpi.{$DOMAIN} {
+	reverse_proxy pihole:80
+}
+
+photos.rpi.{$DOMAIN} {
+	reverse_proxy photoprism:2342
+}
+
+logs.rpi.{$DOMAIN} {
+	reverse_proxy dozzle:8080
+}
+
+sync.rpi.{$DOMAIN} {
+	reverse_proxy syncthing:8384
+}
+
+changedetection.rpi.{$DOMAIN} {
+	reverse_proxy changedetection:5000
+}
+
+happy.rpi.{$DOMAIN} {
+	reverse_proxy happy-server:3000
+}

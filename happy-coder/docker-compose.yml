@@ -33,13 +33,9 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.happy.rule=Host(`happy.rpi.${DOMAIN}`)"
-      - "traefik.http.routers.happy.tls=true"
-      - "traefik.http.routers.happy.tls.certresolver=myresolver"
-      - "traefik.http.routers.happy.entrypoints=websecure"
-      - "traefik.http.services.happy.loadbalancer.server.port=3000"
+    networks:
+      - default
+      - proxy
 
   postgres:
     image: postgres:15
@@ -92,4 +88,8 @@ volumes:
   postgres_data:
   redis_data:
   happy_minio_data:
+
+networks:
+  proxy:
+    external: true
 
