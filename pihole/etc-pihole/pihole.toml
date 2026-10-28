@@ -1,7 +1,7 @@
 # Pi-hole configuration file (v6.5)
 # Encoding: UTF-8
 # This file is managed by pihole-FTL
-# Last updated on 2026-03-01 10:49:39 GMT
+# Last updated on 2026-10-28 11:22:18 GMT
 
 [dns]
   # Upstream DNS Servers to be used by Pi-hole. If this is not set, Pi-hole will not
@@ -127,7 +127,9 @@
   # Allowed values are:
   #     Array of custom DNS records each one in HOSTS form: "IP HOSTNAME [HOSTNAME ...]"
   hosts = [
-    "100.124.142.9 rpi.affablegecko.net"
+    "100.124.142.9 rpi.affablegecko.net",
+    "100.90.71.107 coder.affablegecko.net",
+    "100.90.71.107 hp.affablegecko.net"
   ] ### CHANGED, default = []
 
   # If set, queries for plain names, without dots or domain parts, are never forwarded to
@@ -232,7 +234,11 @@
     "sync.rpi.affablegecko.net,rpi.affablegecko.net",
     "immich.rpi.affablegecko.net,rpi.affablegecko.net",
     "changedetection.rpi.affablegecko.net,rpi.affablegecko.net",
-    "happy.rpi.affablegecko.net,rpi.affablegecko.net"
+    "happy.rpi.affablegecko.net,rpi.affablegecko.net",
+    "sync.hp.affablegecko.net,hp.affablegecko.net",
+    "code.hp.affablegecko.net,hp.affablegecko.net",
+    "scran.hp.affablegecko.net,hp.affablegecko.net",
+    "metrics.hp.affablegecko.net,hp.affablegecko.net"
   ] ### CHANGED, default = []
 
   # Port used by the DNS server
@@ -1414,7 +1420,10 @@
   #
   # Allowed values are:
   #     Array of valid dnsmasq config line options
-  dnsmasq_lines = []
+  dnsmasq_lines = [
+    "address=/.hp.affablegecko.net/100.90.71.107",
+    "address=/.rpi.affablegecko.net/100.124.142.9"
+  ] ### CHANGED, default = []
 
   # Log additional information about queries and replies to pihole.log
   #
@@ -1730,6 +1739,6 @@
   all = false
 
 # Configuration statistics:
-# 166 total entries out of which 158 entries are default
-# --> 8 entries are modified
+# 166 total entries out of which 157 entries are default
+# --> 9 entries are modified
 
