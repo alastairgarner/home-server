@@ -8,10 +8,10 @@ the service; do not do that until the prerequisites below are met.
 ## Prerequisites / current blockers
 
 - **Source is published, but private.** The application repository is
-  <https://github.com/alastairgarner/markdown-brain>, with `main` published at
+  <https://github.com/alastairgarner/ag-mcp>, with `main` published at
   `abee19e4930ee1e3d34c068fc518c9cca2f8d127` at this update.
   The configured build context
-  `https://github.com/alastairgarner/markdown-brain.git#main` **cannot be fetched
+  `https://github.com/alastairgarner/ag-mcp.git#main` **cannot be fetched
   anonymously**. Pi BuildKit repository authentication remains a prerequisite;
   MCP bearer tokens do not authenticate GitHub builds. A host GitHub login alone
   does not necessarily give the builder access. Arrange narrowly scoped,

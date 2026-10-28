@@ -4,7 +4,7 @@ services:
     profiles: [brain]
     build:
       # main is a Git branch ref, not an image tag. Private repo: builder auth required.
-      context: https://github.com/alastairgarner/markdown-brain.git#main
+      context: https://github.com/alastairgarner/ag-mcp.git#main
     init: true
     user: "1000:1000"
     environment:
