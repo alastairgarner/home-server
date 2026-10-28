@@ -7,20 +7,14 @@ the service; do not do that until the prerequisites below are met.
 
 ## Prerequisites / current blockers
 
-- **Source is published, but private.** The application repository is
+- **Source is published and public.** The application repository is
   <https://github.com/alastairgarner/ag-mcp>, with `main` published at
   `abee19e4930ee1e3d34c068fc518c9cca2f8d127` at this update.
-  The configured build context
-  `https://github.com/alastairgarner/ag-mcp.git#main` **cannot be fetched
-  anonymously**. Pi BuildKit repository authentication remains a prerequisite;
-  MCP bearer tokens do not authenticate GitHub builds. A host GitHub login alone
-  does not necessarily give the builder access. Arrange narrowly scoped,
-  read-only builder access separately, without embedding credentials in URLs,
-  Compose, build arguments, or Git. Options include BuildKit Git authentication
-  for the HTTPS context, or an SSH Git context with SSH forwarding and a
-  read-only deploy key (requiring a deliberate build-context/config change).
-  Making the repository public is an alternative only with explicit user
-  approval. This integration configures no credentials and changes no visibility.
+  The configured HTTPS Git build context
+  `https://github.com/alastairgarner/ag-mcp.git#main` can be fetched anonymously:
+  **no GitHub credentials, deploy key, or SSH forwarding are required**.
+  This only makes the source available; **application bearer-token
+  authentication remains mandatory** for HTTP MCP access.
 - **`#main` is a Git branch ref, not an image tag.** It intentionally tracks the
   application's main branch rather than pinning a commit. A Git push alone does
   not update a running container: updates require an explicit rebuild/recreation.
@@ -98,10 +92,10 @@ finish during graceful shutdown.
 
 ## Future operation (not executed by this integration)
 
-Only after private-repository BuildKit access, application auth setup, ARM64
-verification, and DNS approval, run these commands from the repository root on
-the intended host. The build command assumes the builder's repository
-credentials have been configured separately; it does not configure them:
+Only after application auth setup, ARM64 verification, and DNS approval, run
+these commands from the repository root on the intended host. The public HTTPS
+source requires no GitHub authentication; private application auth provisioning
+is still required before starting Brain:
 
 ```sh
 # Explicit first build/start or deliberate update from application main:

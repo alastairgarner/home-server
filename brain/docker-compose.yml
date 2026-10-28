@@ -1,9 +1,9 @@
-# Opt-in only: private-repo BuildKit access and app auth setup are prerequisites.
+# Opt-in only: private application auth setup is required before starting.
 services:
   brain:
     profiles: [brain]
     build:
-      # main is a Git branch ref, not an image tag. Private repo: builder auth required.
+      # main is a Git branch ref, not an image tag. Public source: no GitHub auth needed.
       context: https://github.com/alastairgarner/ag-mcp.git#main
     init: true
     user: "1000:1000"
