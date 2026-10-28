@@ -2,3 +2,6 @@
 happy
 
 .DS_Store
+
+# Private Markdown Brain authentication config (hashes only).
+/brain/.local/

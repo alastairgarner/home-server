@@ -1,0 +1,51 @@
+# Opt-in only: remote source publication and private auth setup are prerequisites.
+services:
+  brain:
+    profiles: [brain]
+    build:
+      # main is a Git branch ref, not an image tag. Source is not published yet.
+      context: https://github.com/alastairgarner/markdown-brain.git#main
+    init: true
+    user: "1000:1000"
+    environment:
+      HTTP_HOST: 0.0.0.0
+      PORT: "3000"
+      NOTES_ROOT: /data/notes
+      STATE_DIR: /data/state
+      AUTH_CONFIG: /config/auth.json
+      HTTP_ALLOWED_HOSTS: "brain.rpi.${DOMAIN},localhost,127.0.0.1,[::1]"
+      HTTP_ALLOWED_ORIGINS: ""
+      NODE_OPTIONS: --max-old-space-size=384
+    volumes:
+      - brain-fixture-notes:/data/notes
+      - brain-fixture-state:/data/state
+      - type: bind
+        source: ./.local/config
+        target: /config
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    mem_limit: 768m
+    memswap_limit: 768m
+    cpus: 1.0
+    pids_limit: 128
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 60s
+    # Same implicit default network as Traefik; deliberately no published port.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain.rule=Host(`brain.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.brain.tls=true"
+      - "traefik.http.routers.brain.tls.certresolver=myresolver"
+      - "traefik.http.routers.brain.entrypoints=websecure"
+      - "traefik.http.services.brain.loadbalancer.server.port=3000"
+
+volumes:
+  brain-fixture-notes:
+  brain-fixture-state:

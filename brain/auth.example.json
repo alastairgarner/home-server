@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "tokens": [
+    {
+      "name": "client",
+      "sha256": "REPLACE_WITH_64_LOWERCASE_HEX_SHA256_HASH"
+    }
+  ]
+}
