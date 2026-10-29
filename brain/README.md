@@ -152,14 +152,13 @@ backup. Root and state must remain disjoint and exclusive to this process.
 Do not remove writer locks after a crash until confirming no writer is running.
 
 Runtime preserves the application's read-only root filesystem, dropped `ALL`
-capabilities, `no-new-privileges`, init process, configured limits of **768 MiB
-RAM with no extra swap, 1 CPU, 128 PIDs**, a **64 MiB `/tmp` tmpfs** (mode 1777),
-**384 MiB V8 old-space** ceiling, and **60-second** shutdown grace.
-**The Pi currently reports unsupported memory cgroups, so container memory and
-swap caps are not enforced there.** The V8 ceiling is not a total-process memory
-cap. This change does not alter kernel/boot configuration. These settings do not
-bound image/build size, persistent disk usage, or execution time. Native work/OOM/forced termination may
-require manual lock recovery. Monitor disk growth; never discard authoritative
+capabilities, `no-new-privileges`, init process, **1 CPU, 128 PIDs**, a
+**64 MiB `/tmp` tmpfs** (mode 1777), **384 MiB V8 old-space** ceiling, and
+**60-second** shutdown grace. **Docker imposes no container memory or swap cap.**
+The V8 heap ceiling and application workload limits remain separate controls,
+not a total-process memory cap; Brain can exhaust host memory. These settings do
+not bound image/build size, persistent disk usage, or execution time. Native
+work/OOM/forced termination may require manual lock recovery. Monitor disk growth; never discard authoritative
 notes when rebuilding the index.
 
 Application defaults (optional overrides belong under service `environment`,

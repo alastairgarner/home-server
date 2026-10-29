@@ -26,8 +26,6 @@ services:
         bind:
           create_host_path: false
     read_only: true
-    mem_limit: 768m
-    memswap_limit: 768m
     cpus: 1.0
     pids_limit: 128
     tmpfs:
