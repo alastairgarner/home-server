@@ -5,9 +5,7 @@ include:
   - photoprism/docker-compose.yml
   - syncthing/docker-compose.yml
   - changedetection/docker-compose.yml
-  - happy-coder/docker-compose.yml
   - brain/docker-compose.yml
-  # - monitoring/docker-compose.yml
 
 volumes:
   backups:
