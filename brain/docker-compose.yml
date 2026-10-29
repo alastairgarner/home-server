@@ -1,7 +1,7 @@
-# Opt-in only: private application auth setup is required before starting.
+# Included in normal stack startup; private application auth setup is required.
 services:
   brain:
-    profiles: [brain]
+    restart: unless-stopped
     build:
       # main is a Git branch ref, not an image tag. Public source: no GitHub auth needed.
       context: https://github.com/alastairgarner/ag-mcp.git#main

@@ -1,11 +1,16 @@
-# Markdown Brain MCP (opt-in, not deployed)
+# Markdown Brain MCP
 
-The root Compose file includes this service, but the `brain` profile is disabled
-by default. Ordinary `docker compose up -d` does not build or start it and needs
-neither its source nor its auth config. Explicitly targeting `brain` also enables
-the service; do not do that until the prerequisites below are met.
+The root Compose file includes Brain in normal `docker compose up -d` startup;
+no profile is required. Prepare the private auth config before first startup.
+Missing/invalid config prevents Brain from starting successfully.
 
-## Prerequisites / current blockers
+`restart: unless-stopped` restarts the container after a process exit/crash and
+when Docker starts after reboot, unless explicitly stopped. A manually stopped
+container stays stopped across Docker restarts until started again. An
+`unhealthy` healthcheck status alone does not trigger a restart. Docker itself
+must be configured to start on boot.
+
+## Source and deployment status
 
 - **Source is published and public.** The application repository is
   <https://github.com/alastairgarner/ag-mcp>, with `main` published at
@@ -18,17 +23,19 @@ the service; do not do that until the prerequisites below are met.
 - **`#main` is a Git branch ref, not an image tag.** It intentionally tracks the
   application's main branch rather than pinning a commit. A Git push alone does
   not update a running container: updates require an explicit rebuild/recreation.
-- Raspberry Pi **ARM64 builds/runtime are unverified**. Only local amd64 Docker
-  tests passed upstream; native dependencies may need additional work. QMD
-  dependency advisories remain outstanding (see the application's
-  `docs/qmd-research.md`). Review these before deployment.
-- Private auth config, DNS resolution for `brain.rpi.${DOMAIN}`, and Pi deployment
-  are separate **manual later actions**. No DNS, global Traefik, router, Tailscale,
-  or network changes are made here. Keep access on trusted LAN/tailnet; DNS alone
-  is not access control. Use the existing root `.env.template` convention for
-  `DOMAIN`; no new secret environment variables are required.
+- The user reports Brain is running on the Pi with auth provisioned; an
+  authenticated MCP connection exposed seven tools at
+  **`https://brain.rpi.affablegecko.net/mcp`**. This is a deployment smoke check,
+  not an exhaustive ARM64 performance/resource validation. QMD dependency
+  advisories remain outstanding (see the application's `docs/qmd-research.md`).
+- Auth provisioning, DNS and deployment remain manual host setup steps. This
+  repository change does not deploy/restart services or change DNS, global
+  Traefik, router, Tailscale, or network settings. Keep access on trusted
+  LAN/tailnet; DNS alone is not access control. Use the existing root
+  `.env.template` convention for `DOMAIN`; no new secret environment variables
+  are required.
 
-## Private authentication setup (manual, later)
+## Private authentication setup (manual, first setup)
 
 HTTP MCP requires a bearer token on **every** request, including initialization
 and notifications. All registered clients have full allowed-root read/write
@@ -90,26 +97,27 @@ remove the old hash, and restart again. To revoke all clients, stop the service;
 an empty token list intentionally prevents startup. Already accepted work may
 finish during graceful shutdown.
 
-## Future operation (not executed by this integration)
+## Operation (commands not executed by this repository change)
 
-Only after application auth setup, ARM64 verification, and DNS approval, run
-these commands from the repository root on the intended host. The public HTTPS
-source requires no GitHub authentication; private application auth provisioning
-is still required before starting Brain:
+Run from the repository root after preparing application auth and host routing.
+The public HTTPS source requires no GitHub authentication.
 
 ```sh
-# Explicit first build/start or deliberate update from application main:
-docker compose --profile brain build --pull --no-cache brain
-docker compose --profile brain up -d --no-deps --force-recreate brain
+# Normal parent-stack startup now includes Brain:
+docker compose up -d
+# Explicit first build or deliberate update from application main:
+docker compose build --pull --no-cache brain
+docker compose up -d --no-deps --force-recreate brain
 # Mandatory after every auth config change:
-docker compose --profile brain restart brain
-# Disable without deleting notes/state:
-docker compose --profile brain stop brain
+docker compose restart brain
+# Stop without deleting notes/state (a later stack up starts it again):
+docker compose stop brain
 ```
 
 Review changes on application main before rebuilding. No automatic updater is
 configured. Do not use `down -v`: that could delete notes and unrelated stack
-volumes. The commands above target only Brain; Traefik must already be running.
+volumes. Only the first command operates on the whole stack; the remaining
+commands target Brain. Traefik must be running to serve HTTPS.
 
 Configure a stateless Streamable HTTP client to use
 **`https://brain.rpi.${DOMAIN}/mcp`** (substitute the actual domain), sending
@@ -144,10 +152,13 @@ backup. Root and state must remain disjoint and exclusive to this process.
 Do not remove writer locks after a crash until confirming no writer is running.
 
 Runtime preserves the application's read-only root filesystem, dropped `ALL`
-capabilities, `no-new-privileges`, init process, **768 MiB RAM with no extra swap,
-1 CPU, 128 PIDs**, a **64 MiB `/tmp` tmpfs** (mode 1777), **384 MiB V8 old-space**
-ceiling, and **60-second** shutdown grace. These do not bound image/build size,
-persistent disk usage, or execution time. Native work/OOM/forced termination may
+capabilities, `no-new-privileges`, init process, configured limits of **768 MiB
+RAM with no extra swap, 1 CPU, 128 PIDs**, a **64 MiB `/tmp` tmpfs** (mode 1777),
+**384 MiB V8 old-space** ceiling, and **60-second** shutdown grace.
+**The Pi currently reports unsupported memory cgroups, so container memory and
+swap caps are not enforced there.** The V8 ceiling is not a total-process memory
+cap. This change does not alter kernel/boot configuration. These settings do not
+bound image/build size, persistent disk usage, or execution time. Native work/OOM/forced termination may
 require manual lock recovery. Monitor disk growth; never discard authoritative
 notes when rebuilding the index.
 
