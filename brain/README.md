@@ -1,8 +1,11 @@
-# Markdown Brain MCP
+# Vault MCP
 
-The root Compose file includes Brain in normal `docker compose up -d` startup;
+The root Compose file includes Vault in normal `docker compose up -d` startup;
 no profile is required. Prepare the private auth config before first startup.
-Missing/invalid config prevents Brain from starting successfully.
+Missing/invalid config prevents Vault from starting successfully.
+
+The application is named Vault. The `brain` Compose service, hostname, local
+paths, volume names, and MCP tool names are unchanged.
 
 `restart: unless-stopped` restarts the container after a process exit/crash and
 when Docker starts after reboot, unless explicitly stopped. A manually stopped
@@ -13,17 +16,17 @@ must be configured to start on boot.
 ## Source and deployment status
 
 - **Source is published and public.** The application repository is
-  <https://github.com/alastairgarner/ag-mcp>, with `main` published at
-  `abee19e4930ee1e3d34c068fc518c9cca2f8d127` at this update.
+  <https://github.com/alastairgarner/vault>, with `main` published at
+  `220ec611d20fd1ed788c636ec858544f4b1bd864` at this update.
   The configured HTTPS Git build context
-  `https://github.com/alastairgarner/ag-mcp.git#main` can be fetched anonymously:
+  `https://github.com/alastairgarner/vault.git#main` can be fetched anonymously:
   **no GitHub credentials, deploy key, or SSH forwarding are required**.
   This only makes the source available; **application bearer-token
   authentication remains mandatory** for HTTP MCP access.
 - **`#main` is a Git branch ref, not an image tag.** It intentionally tracks the
   application's main branch rather than pinning a commit. A Git push alone does
   not update a running container: updates require an explicit rebuild/recreation.
-- The user reports Brain is running on the Pi with auth provisioned; an
+- The user reports Vault is running on the Pi with auth provisioned; an
   authenticated MCP connection exposed seven tools at
   **`https://brain.rpi.affablegecko.net/mcp`**. This is a deployment smoke check,
   not an exhaustive ARM64 performance/resource validation. QMD dependency
@@ -103,7 +106,7 @@ Run from the repository root after preparing application auth and host routing.
 The public HTTPS source requires no GitHub authentication.
 
 ```sh
-# Normal parent-stack startup now includes Brain:
+# Normal parent-stack startup now includes Vault:
 docker compose up -d
 # Explicit first build or deliberate update from application main:
 docker compose build --pull --no-cache brain
@@ -117,7 +120,7 @@ docker compose stop brain
 Review changes on application main before rebuilding. No automatic updater is
 configured. Do not use `down -v`: that could delete notes and unrelated stack
 volumes. Only the first command operates on the whole stack; the remaining
-commands target Brain. Traefik must be running to serve HTTPS.
+commands target Vault. Traefik must be running to serve HTTPS.
 
 Configure a stateless Streamable HTTP client to use
 **`https://brain.rpi.${DOMAIN}/mcp`** (substitute the actual domain), sending
@@ -127,7 +130,7 @@ clients need no `Origin` header. `POST /mcp` is supported; authenticated
 
 Traefik uses the existing `websecure` entrypoint, `myresolver` certificate
 resolver and internal port **3000** on the same implicit default Compose network.
-No Brain port is published on the host. TLS terminates at Traefik; the private
+No Vault port is published on the host. TLS terminates at Traefik; the private
 proxy-to-container hop is HTTP. Do not log Authorization headers.
 `HTTP_ALLOWED_HOSTS` includes the chosen DNS hostname **without a port** plus
 `localhost,127.0.0.1,[::1]` for the image's healthcheck. Host validation does not
@@ -135,28 +138,51 @@ trust forwarded headers. Origins are rejected by default; do not enable broad
 CORS. `GET /health` is unauthenticated **liveness only**, still subject to
 Host/Origin checks; it does not prove auth, indexing, or MCP functionality.
 After a separately authorized deployment, verify missing-token MCP rejection,
-authenticated fixture read/write, and revocation after restart; use `brain_status`
-for index freshness.
+authenticated read/write with a disposable test note, and revocation after restart;
+use `brain_status` to verify index freshness after Syncthing delivers external edits.
 
 ## Data, isolation and resource bounds
 
-Start with the dedicated empty/fixture named volumes `brain-fixture-notes` and
-`brain-fixture-state`, mounted read/write at `/data/notes` and `/data/state`.
-**Do not mount or access the real Obsidian vault.** The image initializes these
-paths for UID/GID 1000. Bind mounts would require explicit ownership/security
-label setup and separate approval.
+Vault bind-mounts `${RAID_MOUNT}/docker-volumes/syncthing/obsidian` read/write
+at `/data/notes`, sharing only the Obsidian vault with Syncthing. On the Pi,
+`RAID_MOUNT` must be `/mnt/raid`; the existing vault is at
+`/mnt/raid/docker-volumes/syncthing/obsidian`. An unset/empty `RAID_MOUNT` is
+rejected, and `create_host_path: false` prevents Docker creating a missing vault.
+Ensure the RAID filesystem is mounted before starting Vault.
 
-Full Markdown is authoritative and needs backups. The disposable state includes
-copies of note text as well as the search index: treat it as sensitive, not a
-backup. Root and state must remain disjoint and exclusive to this process.
-Do not remove writer locks after a crash until confirming no writer is running.
+Both services are configured for UID/GID 1000:1000. The existing vault must allow
+that user to traverse directories and read/write notes; do not loosen unrelated
+permissions. SELinux hosts need an appropriate shared-container bind label.
+All authenticated MCP clients have access to the real vault. Application main
+restricts new Markdown notes to the existing lowercase `ai/` directory (and
+existing subdirectories), while preserving reads/search and edits elsewhere.
+This policy and the Vault rename were merged in
+<https://github.com/alastairgarner/vault/pull/1> at commit
+`220ec611d20fd1ed788c636ec858544f4b1bd864`.
+Ensure `obsidian/ai` exists and is writable by UID/GID 1000:1000 before using that
+version; no policy configuration is required. Running deployments only acquire
+this restriction after rebuilding/recreating the service from the updated main.
+MCP edits propagate to other devices through Syncthing. Concurrent
+edits can conflict: Vault's writer lock does not coordinate Syncthing or Obsidian.
+
+Full Markdown is authoritative. `restic/backup.sh` already backs up
+`/mnt/raid/docker-volumes/syncthing`, including this vault; no additional vault
+backup job is needed. Verify backup success and restores separately.
+
+The existing `brain-fixture-state` volume remains at `/data/state`, outside the
+synced vault and exclusive to Vault. It contains the disposable search index
+and copies of note text: treat it as sensitive, not a backup. It can be rebuilt
+from the vault and does not need backing up. Stop Vault before clearing state;
+do not remove writer locks after a crash until confirming no writer is running.
+The old `brain-fixture-notes` volume is no longer mounted; this configuration
+change does not delete it or migrate its contents.
 
 Runtime preserves the application's read-only root filesystem, dropped `ALL`
 capabilities, `no-new-privileges`, init process, **1 CPU, 128 PIDs**, a
 **64 MiB `/tmp` tmpfs** (mode 1777), **384 MiB V8 old-space** ceiling, and
 **60-second** shutdown grace. **Docker imposes no container memory or swap cap.**
 The V8 heap ceiling and application workload limits remain separate controls,
-not a total-process memory cap; Brain can exhaust host memory. These settings do
+not a total-process memory cap; Vault can exhaust host memory. These settings do
 not bound image/build size, persistent disk usage, or execution time. Native
 work/OOM/forced termination may require manual lock recovery. Monitor disk growth; never discard authoritative
 notes when rebuilding the index.
