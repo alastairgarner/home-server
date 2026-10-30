@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     build:
       # main is a Git branch ref, not an image tag. Public source: no GitHub auth needed.
-      context: https://github.com/alastairgarner/ag-mcp.git#main
+      context: https://github.com/alastairgarner/vault.git#main
     init: true
     user: "1000:1000"
     environment:
@@ -17,7 +17,11 @@ services:
       HTTP_ALLOWED_ORIGINS: ""
       NODE_OPTIONS: --max-old-space-size=384
     volumes:
-      - brain-fixture-notes:/data/notes
+      - type: bind
+        source: ${RAID_MOUNT:?Set RAID_MOUNT to the existing RAID mount}/docker-volumes/syncthing/obsidian
+        target: /data/notes
+        bind:
+          create_host_path: false
       - brain-fixture-state:/data/state
       - type: bind
         source: ./.local/config
@@ -45,5 +49,4 @@ services:
       - "traefik.http.services.brain.loadbalancer.server.port=3000"
 
 volumes:
-  brain-fixture-notes:
   brain-fixture-state:
