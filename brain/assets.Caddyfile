@@ -1,0 +1,29 @@
+# Read-only, unauthenticated image server for Vault assets. Traefik terminates TLS.
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:8080 {
+	root * /srv
+
+	header {
+		X-Content-Type-Options nosniff
+		Content-Security-Policy "default-src 'none'; sandbox"
+		Cache-Control "public, max-age=86400"
+		-Server
+	}
+
+	# Images only: anything else (HTML, SVG, stray files) is never served.
+	@images path_regexp (?i)\.(png|jpe?g|gif|webp)$
+	handle @images {
+		file_server {
+			hide .*
+		}
+	}
+
+	handle {
+		respond 404
+	}
+}

@@ -141,6 +141,36 @@ After a separately authorized deployment, verify missing-token MCP rejection,
 authenticated read/write with a disposable test note, and revocation after restart;
 use `brain_status` to verify index freshness after Syncthing delivers external edits.
 
+## Asset file server (`assets`)
+
+Caddy serves `${RAID_MOUNT}/docker-volumes/vault-assets` read-only at
+**`https://files.rpi.${DOMAIN}/<path>`**, so notes can embed images by URL
+(`![](https://files.rpi.${DOMAIN}/x.png)`) without syncing them. Config:
+[`assets.Caddyfile`](assets.Caddyfile).
+
+- **No auth.** Anything on the LAN/tailnet that can reach Traefik can read every
+  asset. Don't store sensitive images there.
+- Serves only `.png`, `.jpg`/`.jpeg`, `.gif` and `.webp` (case-insensitive extension). Other paths,
+  dotfiles and directory listings return 404. Responses send `nosniff`, a
+  sandboxing CSP and a 1-day cache.
+- Runs as 1000:1000, with a read-only root filesystem, a read-only mount and all capabilities dropped except
+  `NET_BIND_SERVICE`. The image's `caddy` binary has that file capability and
+  won't exec without it. It listens on 8080 (no published port), and Traefik terminates TLS.
+- `brain` mounts the same directory read/write at `/data/assets`, with
+  `ASSETS_ROOT`/`ASSETS_BASE_URL` set. These do nothing until the Vault app
+  supports them.
+- The directory is outside the vault and isn't synced. Back it up separately.
+
+First-time host setup (not done by this change):
+
+```sh
+mkdir -p /mnt/raid/docker-volumes/vault-assets
+chown 1000:1000 /mnt/raid/docker-volumes/vault-assets
+# Pi-hole: add CNAME files.rpi.affablegecko.net,rpi.affablegecko.net
+# restic/backup.sh: add /mnt/raid/docker-volumes/vault-assets
+docker compose up -d assets brain
+```
+
 ## Data, isolation and resource bounds
 
 Vault bind-mounts `${RAID_MOUNT}/docker-volumes/syncthing/obsidian` read/write

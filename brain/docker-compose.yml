@@ -16,6 +16,9 @@ services:
       HTTP_ALLOWED_HOSTS: "brain.rpi.${DOMAIN},localhost,127.0.0.1,[::1]"
       HTTP_ALLOWED_ORIGINS: ""
       NODE_OPTIONS: --max-old-space-size=384
+      # Used once the Vault app supports external assets; ignored until then.
+      ASSETS_ROOT: /data/assets
+      ASSETS_BASE_URL: "https://files.rpi.${DOMAIN}"
     volumes:
       - type: bind
         source: ${RAID_MOUNT:?Set RAID_MOUNT to the existing RAID mount}/docker-volumes/syncthing/obsidian
@@ -23,6 +26,11 @@ services:
         bind:
           create_host_path: false
       - brain-fixture-state:/data/state
+      - type: bind
+        source: ${RAID_MOUNT}/docker-volumes/vault-assets
+        target: /data/assets
+        bind:
+          create_host_path: false
       - type: bind
         source: ./.local/config
         target: /config
@@ -47,6 +55,48 @@ services:
       - "traefik.http.routers.brain.tls.certresolver=myresolver"
       - "traefik.http.routers.brain.entrypoints=websecure"
       - "traefik.http.services.brain.loadbalancer.server.port=3000"
+
+  # Serves vault-assets read-only at files.rpi.${DOMAIN}; images only, no auth.
+  assets:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    init: true
+    user: "1000:1000"
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    volumes:
+      - type: bind
+        source: ${RAID_MOUNT:?Set RAID_MOUNT to the existing RAID mount}/docker-volumes/vault-assets
+        target: /srv
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./assets.Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    cpus: 0.5
+    pids_limit: 64
+    tmpfs:
+      - /data:size=1m,mode=1777
+      - /config:size=1m,mode=1777
+    cap_drop:
+      - ALL
+    # The image's caddy binary carries this file capability; exec fails without it.
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    # Same implicit default network as Traefik; deliberately no published port.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.assets.rule=Host(`files.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.assets.tls=true"
+      - "traefik.http.routers.assets.tls.certresolver=myresolver"
+      - "traefik.http.routers.assets.entrypoints=websecure"
+      - "traefik.http.services.assets.loadbalancer.server.port=8080"
 
 volumes:
   brain-fixture-state:
