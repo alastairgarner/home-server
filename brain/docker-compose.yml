@@ -16,7 +16,6 @@ services:
       HTTP_ALLOWED_HOSTS: "brain.rpi.${DOMAIN},localhost,127.0.0.1,[::1]"
       HTTP_ALLOWED_ORIGINS: ""
       NODE_OPTIONS: --max-old-space-size=384
-      # Used once the Vault app supports external assets; ignored until then.
       ASSETS_ROOT: /data/assets
       ASSETS_BASE_URL: "https://files.rpi.${DOMAIN}"
     volumes:

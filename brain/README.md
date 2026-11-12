@@ -157,8 +157,8 @@ Caddy serves `${RAID_MOUNT}/docker-volumes/vault-assets` read-only at
   `NET_BIND_SERVICE`. The image's `caddy` binary has that file capability and
   won't exec without it. It listens on 8080 (no published port), and Traefik terminates TLS.
 - `brain` mounts the same directory read/write at `/data/assets`, with
-  `ASSETS_ROOT`/`ASSETS_BASE_URL` set. These do nothing until the Vault app
-  supports them.
+  `ASSETS_ROOT`/`ASSETS_BASE_URL` set, so `attachment_create` writes there and
+  returns URLs (Vault `main` from `580f9f1`; rebuild `brain` to pick it up).
 - The directory is outside the vault and isn't synced. Back it up separately.
 
 First-time host setup (not done by this change):
