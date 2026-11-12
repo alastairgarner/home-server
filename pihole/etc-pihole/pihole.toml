@@ -223,23 +223,7 @@
   #
   # Allowed values are:
   #     Array of CNAMEs, each one in the following form: "<cname>,<target>[,<TTL>]"
-  cnameRecords = [
-    "logs.rpi.affablegecko.net,rpi.affablegecko.net",
-    "pihole.rpi.affablegecko.net,rpi.affablegecko.net",
-    "traefik.rpi.affablegecko.net,rpi.affablegecko.net",
-    "photos.rpi.affablegecko.net,rpi.affablegecko.net",
-    "metrics.rpi.affablegecko.net,rpi.affablegecko.net",
-    "cadvisor.rpi.affablegecko.net,rpi.affablegecko.net",
-    "notify.rpi.affablegecko.net,rpi.affablegecko.net",
-    "sync.rpi.affablegecko.net,rpi.affablegecko.net",
-    "immich.rpi.affablegecko.net,rpi.affablegecko.net",
-    "changedetection.rpi.affablegecko.net,rpi.affablegecko.net",
-    "happy.rpi.affablegecko.net,rpi.affablegecko.net",
-    "sync.hp.affablegecko.net,hp.affablegecko.net",
-    "code.hp.affablegecko.net,hp.affablegecko.net",
-    "scran.hp.affablegecko.net,hp.affablegecko.net",
-    "metrics.hp.affablegecko.net,hp.affablegecko.net"
-  ] ### CHANGED, default = []
+  cnameRecords = []
 
   # Port used by the DNS server
   #
