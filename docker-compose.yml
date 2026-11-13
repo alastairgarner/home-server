@@ -6,6 +6,7 @@ include:
   - syncthing/docker-compose.yml
   - changedetection/docker-compose.yml
   - brain/docker-compose.yml
+  - silverbullet/docker-compose.yml
 
 volumes:
   backups:

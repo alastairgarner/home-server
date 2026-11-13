@@ -1,0 +1,22 @@
+# https://silverbullet.md/Install/Docker
+# Multi-space mode: create account + spaces via the Dashboard on first visit.
+# Obsidian vault mounted at /vault; add it as a space in the Dashboard to edit live.
+services:
+  silverbullet:
+    image: ghcr.io/silverbulletmd/silverbullet:2.12.1-slim # slim = no Chromium/Runtime API
+    container_name: silverbullet
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ${RAID_MOUNT}/docker-volumes/silverbullet:/data
+      - ${RAID_MOUNT}/docker-volumes/syncthing/obsidian:/vault
+    # Same implicit default network as Traefik; deliberately no published port.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.silverbullet.rule=Host(`silverbullet.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.silverbullet.tls=true"
+      - "traefik.http.routers.silverbullet.tls.certresolver=myresolver"
+      - "traefik.http.routers.silverbullet.entrypoints=websecure"
+      - "traefik.http.services.silverbullet.loadbalancer.server.port=3000"
