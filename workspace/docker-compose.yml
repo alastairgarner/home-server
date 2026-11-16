@@ -23,8 +23,7 @@ services:
           create_host_path: false
     read_only: true
     cpus: 1.0
-    mem_limit: 384m
-    memswap_limit: 384m
+    # No mem_limit: the Pi kernel has no memory cgroup, so Docker ignores it (same as brain).
     pids_limit: 64
     tmpfs:
       - /tmp:size=16m,mode=1777
