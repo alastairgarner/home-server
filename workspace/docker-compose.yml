@@ -1,0 +1,43 @@
+# Gmail read/draft MCP server. Needs private config in ./.local/config (see README.md).
+services:
+  workspace:
+    restart: unless-stopped
+    build:
+      # main is a Git branch ref, not an image tag. Rebuild explicitly to update.
+      context: https://github.com/alastairgarner/workspace-mcp.git#main
+    init: true
+    user: "1000:1000"
+    environment:
+      HTTP_HOST: 0.0.0.0
+      PORT: "3000"
+      CONFIG_DIR: /config
+      HTTP_ALLOWED_HOSTS: "workspace.rpi.${DOMAIN},localhost,127.0.0.1,[::1]"
+      HTTP_ALLOWED_ORIGINS: ""
+      NODE_OPTIONS: --max-old-space-size=256
+    volumes:
+      - type: bind
+        source: ./.local/config
+        target: /config
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    cpus: 1.0
+    mem_limit: 384m
+    memswap_limit: 384m
+    pids_limit: 64
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+    # Same implicit default network as Traefik; deliberately no published port.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.workspace.rule=Host(`workspace.rpi.${DOMAIN}`)"
+      - "traefik.http.routers.workspace.tls=true"
+      - "traefik.http.routers.workspace.tls.certresolver=myresolver"
+      - "traefik.http.routers.workspace.entrypoints=websecure"
+      - "traefik.http.services.workspace.loadbalancer.server.port=3000"

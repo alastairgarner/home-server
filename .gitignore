@@ -5,3 +5,6 @@ happy
 
 # Private Markdown Brain authentication config (hashes only).
 /brain/.local/
+
+# Private workspace MCP config (Google refresh tokens, OAuth client, token hashes).
+/workspace/.local/
